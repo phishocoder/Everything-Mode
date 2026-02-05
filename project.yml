@@ -10,6 +10,8 @@ settings:
     TARGETED_DEVICE_FAMILY: 1
     SUPPORTS_MACCATALYST: NO
     GENERATE_INFOPLIST_FILE: YES
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 7ER7B4U7Y5
 targets:
   GentleReset:
     type: application
