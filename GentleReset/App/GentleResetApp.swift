@@ -2,12 +2,12 @@ import SwiftUI
 
 @main
 struct GentleResetApp: App {
-    @StateObject private var resetState = ResetState()
+    @StateObject private var viewModel = EverythingModeViewModel()
 
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environmentObject(resetState)
+                .environmentObject(viewModel)
                 .preferredColorScheme(.light)
         }
     }

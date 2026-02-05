@@ -9,30 +9,38 @@ final class GentleResetUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        XCTAssertTrue(app.buttons["startButton"].waitForExistence(timeout: 2))
-        app.buttons["startButton"].tap()
+        XCTAssertTrue(app.buttons["startResetButton"].waitForExistence(timeout: 2))
+        app.buttons["startResetButton"].tap()
 
-        XCTAssertTrue(app.buttons["continueButton"].waitForExistence(timeout: 2))
-        app.buttons["continueButton"].tap()
+        XCTAssertTrue(app.buttons["continueFromDumpButton"].waitForExistence(timeout: 2))
+        let dumpEditor = app.textViews["brainDumpEditor"]
+        XCTAssertTrue(dumpEditor.waitForExistence(timeout: 2))
+        dumpEditor.tap()
+        dumpEditor.typeText("Work messages, laundry, and an overdue call.")
+        app.buttons["continueFromDumpButton"].tap()
+
+        let practical = app.buttons["category_practical"]
+        XCTAssertTrue(practical.waitForExistence(timeout: 2))
+        practical.tap()
+        XCTAssertTrue(app.buttons["continueFromCategoriesButton"].isEnabled)
+        app.buttons["continueFromCategoriesButton"].tap()
 
         let actionField = app.textFields["actionTextField"]
         XCTAssertTrue(actionField.waitForExistence(timeout: 2))
         actionField.tap()
         actionField.typeText("Reply with one sentence")
+        app.buttons["continueFromActionButton"].tap()
 
-        XCTAssertTrue(app.buttons["pickThisButton"].isEnabled)
-        app.buttons["pickThisButton"].tap()
-
-        let scheduleButton = app.buttons["modeScheduleButton"]
-        XCTAssertTrue(scheduleButton.waitForExistence(timeout: 2))
-        scheduleButton.tap()
+        let parkChoice = app.buttons["closing_parkIt"]
+        XCTAssertTrue(parkChoice.waitForExistence(timeout: 2))
+        parkChoice.tap()
 
         XCTAssertTrue(app.buttons["finishResetButton"].isEnabled)
         app.buttons["finishResetButton"].tap()
 
-        XCTAssertTrue(app.staticTexts["You did enough for now."].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["You can stop here."].waitForExistence(timeout: 2))
+        app.buttons["resetAgainButton"].tap()
 
-        app.buttons["doneButton"].tap()
-        XCTAssertTrue(app.staticTexts["If everything feels like too much, you are not broken."].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Everything feels like too much right now."].waitForExistence(timeout: 2))
     }
 }

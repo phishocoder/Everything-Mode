@@ -1,334 +1,349 @@
 import SwiftUI
 
 struct RootView: View {
-    @EnvironmentObject private var state: ResetState
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
         ScreenContainer {
             VStack(alignment: .leading, spacing: 20) {
-                progressHeader
-                card
+                header
+                stepCard
                 navigationRow
             }
         }
+        .animation(.easeInOut(duration: 0.24), value: viewModel.step)
     }
 
-    private var progressHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("A small reset")
-                .font(.system(size: 28, weight: .semibold, design: .rounded))
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Everything Mode")
+                .font(.system(size: 30, weight: .bold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text(stepLabel)
+            Text(viewModel.progressText)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(CalmTheme.secondaryText)
         }
-        .padding(.top, 8)
     }
 
-    private var card: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            currentStepView
+    private var stepCard: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            switch viewModel.step {
+            case .arrive:
+                ArriveStep()
+            case .dump:
+                DumpStep()
+            case .categorize:
+                CategorizeStep()
+            case .chooseAction:
+                ChooseActionStep()
+            case .chooseClosing:
+                ChooseClosingStep()
+            case .complete:
+                CompleteStep()
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(18)
-        .background(CalmTheme.card)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(CalmTheme.border, lineWidth: 1)
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 22)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(CalmTheme.cardStroke, lineWidth: 1)
+                )
+                .shadow(color: CalmTheme.shadow, radius: 12, y: 8)
         )
-    }
-
-    @ViewBuilder
-    private var currentStepView: some View {
-        switch state.step {
-        case .welcome:
-            WelcomeStep()
-        case .brainDump:
-            BrainDumpStep()
-        case .chooseAction:
-            ChooseActionStep()
-        case .chooseMode:
-            ChooseModeStep()
-        case .exit:
-            ExitStep()
-        }
+        .transition(.opacity.combined(with: .move(edge: .trailing)))
     }
 
     private var navigationRow: some View {
         HStack(spacing: 12) {
-            if state.step != .welcome {
+            if viewModel.step != .arrive {
                 Button("Back") {
-                    state.back()
+                    LightHaptics.tap()
+                    viewModel.back()
                 }
                 .buttonStyle(SecondaryOutlineButtonStyle())
+                .accessibilityIdentifier("backButton")
             }
 
-            Button(primaryButtonTitle) {
-                state.next()
+            Button(viewModel.primaryButtonTitle) {
+                LightHaptics.tap()
+                viewModel.next()
             }
             .buttonStyle(PrimaryButtonStyle())
             .accessibilityIdentifier(primaryButtonIdentifier)
-            .disabled(isPrimaryDisabled)
-            .opacity(isPrimaryDisabled ? 0.45 : 1)
-        }
-        .animation(.easeInOut(duration: 0.2), value: state.step)
-    }
-
-    private var primaryButtonTitle: String {
-        switch state.step {
-        case .welcome:
-            return "Start"
-        case .brainDump:
-            return "Continue"
-        case .chooseAction:
-            return "Pick this"
-        case .chooseMode:
-            return "Finish reset"
-        case .exit:
-            return "Done"
-        }
-    }
-
-    private var isPrimaryDisabled: Bool {
-        switch state.step {
-        case .chooseAction:
-            return state.pressureReducingAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        case .chooseMode:
-            return state.selectedMode == nil
-        default:
-            return false
-        }
-    }
-
-    private var stepLabel: String {
-        switch state.step {
-        case .welcome:
-            return "Step 1 of 5"
-        case .brainDump:
-            return "Step 2 of 5"
-        case .chooseAction:
-            return "Step 3 of 5"
-        case .chooseMode:
-            return "Step 4 of 5"
-        case .exit:
-            return "Step 5 of 5"
+            .disabled(!viewModel.canMoveForward)
+            .opacity(viewModel.canMoveForward ? 1 : 0.45)
         }
     }
 
     private var primaryButtonIdentifier: String {
-        switch state.step {
-        case .welcome:
-            return "startButton"
-        case .brainDump:
-            return "continueButton"
+        switch viewModel.step {
+        case .arrive:
+            return "startResetButton"
+        case .dump:
+            return "continueFromDumpButton"
+        case .categorize:
+            return "continueFromCategoriesButton"
         case .chooseAction:
-            return "pickThisButton"
-        case .chooseMode:
+            return "continueFromActionButton"
+        case .chooseClosing:
             return "finishResetButton"
-        case .exit:
-            return "doneButton"
+        case .complete:
+            return "resetAgainButton"
         }
     }
 }
 
-private struct WelcomeStep: View {
+private struct ArriveStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    private var lastResetText: String {
+        guard let summary = viewModel.lastSummary else {
+            return "No streaks, no scores, no pressure. Just relief."
+        }
+
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        let when = formatter.localizedString(for: summary.timestamp, relativeTo: Date())
+        return "Last reset \(when): \"\(summary.action)\""
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("If everything feels like too much, you are not broken.")
-                .font(.system(size: 24, weight: .semibold, design: .rounded))
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Everything feels like too much right now.")
+                .font(.system(size: 26, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text("This is a short reset. No fixing your whole life. Just one gentle next move.")
+            Text("We are not fixing your whole life. We are making the next 15 minutes gentler.")
                 .font(.system(size: 17))
                 .foregroundStyle(CalmTheme.secondaryText)
 
-            Text("About 4-5 minutes.")
-                .font(.system(size: 14, weight: .medium))
+            Text(lastResetText)
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(CalmTheme.secondaryText)
                 .padding(.top, 4)
         }
     }
 }
 
-private struct BrainDumpStep: View {
-    @EnvironmentObject private var state: ResetState
+private struct DumpStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Put it down here")
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text("Write anything on your mind. You can ramble. Nothing has to be neat.")
+            Text("Ramble if you need to. Messy is welcome.")
                 .font(.system(size: 16))
                 .foregroundStyle(CalmTheme.secondaryText)
 
             ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(CalmTheme.border, lineWidth: 1)
-                    .background(CalmTheme.background.opacity(0.5))
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(CalmTheme.inputBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(CalmTheme.cardStroke, lineWidth: 1)
+                    )
 
-                if state.brainDump.isEmpty {
-                    Text("Examples: money, inbox, laundry, family text, that one form, all of it.")
-                        .foregroundStyle(CalmTheme.secondaryText.opacity(0.7))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 14)
+                if viewModel.brainDump.isEmpty {
+                    Text("money, inbox, laundry, hard conversation, body tension, all of it...")
+                        .foregroundStyle(CalmTheme.secondaryText.opacity(0.65))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 16)
                 }
 
-                TextEditor(text: $state.brainDump)
+                TextEditor(text: $viewModel.brainDump)
                     .scrollContentBackground(.hidden)
                     .foregroundStyle(CalmTheme.primaryText)
-                    .padding(8)
-                    .frame(minHeight: 220, maxHeight: 320)
+                    .accessibilityIdentifier("brainDumpEditor")
+                    .padding(10)
+                    .frame(minHeight: 250, maxHeight: 330)
             }
 
-            Text("Keep going until your body feels a little lighter.")
+            Text("You only need enough words to breathe a little easier.")
                 .font(.system(size: 13))
                 .foregroundStyle(CalmTheme.secondaryText)
         }
     }
 }
 
-private struct ChooseActionStep: View {
-    @EnvironmentObject private var state: ResetState
-
-    private let limit = 80
+private struct CategorizeStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Choose one pressure-reducing action")
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
+            Text("Give it a few buckets")
+                .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text("Not the most important thing. Just the thing that would make this moment lighter.")
+            Text("Pick up to three. This is for clarity, not perfection.")
                 .font(.system(size: 16))
                 .foregroundStyle(CalmTheme.secondaryText)
 
-            TextField("Example: Reply with one line to Alex", text: limitedAction)
-                .textInputAutocapitalization(.sentences)
-                .accessibilityIdentifier("actionTextField")
-                .foregroundStyle(CalmTheme.primaryText)
-                .padding(14)
-                .background(CalmTheme.background.opacity(0.65))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(CalmTheme.border, lineWidth: 1)
-                )
-
-            Text("\(state.pressureReducingAction.count)/\(limit)")
-                .font(.system(size: 13, weight: .medium, design: .monospaced))
-                .foregroundStyle(CalmTheme.secondaryText)
-        }
-    }
-
-    private var limitedAction: Binding<String> {
-        Binding(
-            get: { state.pressureReducingAction },
-            set: { newValue in
-                state.pressureReducingAction = String(newValue.prefix(limit))
-            }
-        )
-    }
-}
-
-private struct ChooseModeStep: View {
-    @EnvironmentObject private var state: ResetState
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("How do you want to handle it?")
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
-                .foregroundStyle(CalmTheme.primaryText)
-
-            Text("\"\(state.pressureReducingAction)\"")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(CalmTheme.secondaryText)
-
             VStack(spacing: 10) {
-                ForEach(GentleMode.allCases) { mode in
+                ForEach(WeightCategory.allCases) { category in
+                    let selected = viewModel.selectedCategories.contains(category)
                     Button {
-                        state.selectedMode = mode
+                        LightHaptics.tap()
+                        viewModel.toggleCategory(category)
                     } label: {
-                        HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: state.selectedMode == mode ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(state.selectedMode == mode ? CalmTheme.primaryAction : CalmTheme.secondaryText)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(mode.rawValue)
+                        HStack(spacing: 10) {
+                            Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(selected ? CalmTheme.primaryAction : CalmTheme.secondaryText)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(category.title)
                                     .font(.system(size: 17, weight: .semibold))
                                     .foregroundStyle(CalmTheme.primaryText)
-                                Text(mode.description)
-                                    .font(.system(size: 14))
+                                Text(category.hint)
+                                    .font(.system(size: 13))
                                     .foregroundStyle(CalmTheme.secondaryText)
                             }
                             Spacer()
                         }
                         .padding(12)
-                        .background(CalmTheme.background.opacity(0.6))
+                        .background(CalmTheme.inputBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
-                                .stroke(state.selectedMode == mode ? CalmTheme.primaryAction : CalmTheme.border, lineWidth: 1)
+                                .stroke(selected ? CalmTheme.primaryAction : CalmTheme.cardStroke, lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
-                    .accessibilityIdentifier(mode.accessibilityID)
+                    .accessibilityIdentifier("category_\(category.rawValue)")
                 }
             }
         }
     }
 }
 
-private struct ExitStep: View {
-    @EnvironmentObject private var state: ResetState
+private struct ChooseActionStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    private let actionLimit = 120
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("You did enough for now.")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Choose one relief move")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text("Your choice:")
-                .font(.system(size: 15, weight: .medium))
+            Text("Just one thing that makes this moment lighter.")
+                .font(.system(size: 16))
                 .foregroundStyle(CalmTheme.secondaryText)
 
-            Text("• \(state.pressureReducingAction)")
-                .font(.system(size: 17, weight: .semibold))
+            TextField("Reply with one sentence to Sam", text: actionBinding)
+                .textInputAutocapitalization(.sentences)
+                .foregroundStyle(CalmTheme.primaryText)
+                .accessibilityIdentifier("actionTextField")
+                .padding(14)
+                .background(CalmTheme.inputBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(CalmTheme.cardStroke, lineWidth: 1)
+                )
+
+            Text("\(viewModel.chosenAction.count)/\(actionLimit)")
+                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                .foregroundStyle(CalmTheme.secondaryText)
+        }
+    }
+
+    private var actionBinding: Binding<String> {
+        Binding(
+            get: { viewModel.chosenAction },
+            set: { viewModel.chosenAction = String($0.prefix(actionLimit)) }
+        )
+    }
+}
+
+private struct ChooseClosingStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What counts as done today?")
+                .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            if let mode = state.selectedMode {
-                Text("• Mode: \(mode.rawValue)")
-                    .font(.system(size: 16))
-                    .foregroundStyle(CalmTheme.secondaryText)
-            }
+            Text("\"\(viewModel.chosenAction)\"")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(CalmTheme.secondaryText)
 
-            Text("Close the app or continue your day. No streaks. No score. You can come back whenever it helps.")
-                .font(.system(size: 16))
+            VStack(spacing: 10) {
+                ForEach(ClosingChoice.allCases) { choice in
+                    let selected = viewModel.closingChoice == choice
+                    Button {
+                        LightHaptics.tap()
+                        viewModel.closingChoice = choice
+                    } label: {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(selected ? CalmTheme.primaryAction : CalmTheme.secondaryText)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(choice.title)
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundStyle(CalmTheme.primaryText)
+                                Text(choice.detail)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(CalmTheme.secondaryText)
+                            }
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(CalmTheme.inputBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(selected ? CalmTheme.primaryAction : CalmTheme.cardStroke, lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("closing_\(choice.rawValue)")
+                }
+            }
+        }
+    }
+}
+
+private struct CompleteStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("You can stop here.")
+                .font(.system(size: 26, weight: .semibold, design: .rounded))
+                .foregroundStyle(CalmTheme.primaryText)
+
+            Text("You named it, sorted it, and chose one clear move.")
+                .font(.system(size: 17))
+                .foregroundStyle(CalmTheme.secondaryText)
+
+            Group {
+                Text("Categories: \(viewModel.selectedCategoriesText)")
+                Text("One move: \(viewModel.chosenAction)")
+                if let closingChoice = viewModel.closingChoice {
+                    Text("Closing choice: \(closingChoice.title)")
+                }
+            }
+            .font(.system(size: 15, weight: .medium))
+            .foregroundStyle(CalmTheme.secondaryText)
+
+            Text("Close the app whenever you want. No extra steps.")
+                .font(.system(size: 15))
                 .foregroundStyle(CalmTheme.secondaryText)
                 .padding(.top, 4)
         }
+        .accessibilityIdentifier("completeStep")
     }
 }
 
 #Preview {
     RootView()
-        .environmentObject(ResetState())
-}
-
-private extension GentleMode {
-    var accessibilityID: String {
-        switch self {
-        case .doBriefly:
-            return "modeDoBrieflyButton"
-        case .clarify:
-            return "modeClarifyButton"
-        case .schedule:
-            return "modeScheduleButton"
-        case .ignore:
-            return "modeIgnoreButton"
-        }
-    }
+        .environmentObject(EverythingModeViewModel())
 }
