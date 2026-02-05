@@ -155,15 +155,13 @@ private struct WelcomeStep: View {
 private struct BrainDumpStep: View {
     @EnvironmentObject private var state: ResetState
 
-    private let limit = 300
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Put it down for a moment")
+            Text("Put it down here")
                 .font(.system(size: 22, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text("Write anything on your mind. Fragments are enough.")
+            Text("Write anything on your mind. You can ramble. Nothing has to be neat.")
                 .font(.system(size: 16))
                 .foregroundStyle(CalmTheme.secondaryText)
 
@@ -174,37 +172,23 @@ private struct BrainDumpStep: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14))
 
                 if state.brainDump.isEmpty {
-                    Text("Examples: money, inbox, laundry, family text, that one form...")
+                    Text("Examples: money, inbox, laundry, family text, that one form, all of it.")
                         .foregroundStyle(CalmTheme.secondaryText.opacity(0.7))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 14)
                 }
 
-                TextEditor(text: limitedBrainDump)
+                TextEditor(text: $state.brainDump)
                     .scrollContentBackground(.hidden)
+                    .foregroundStyle(CalmTheme.primaryText)
                     .padding(8)
-                    .frame(minHeight: 150, maxHeight: 180)
+                    .frame(minHeight: 220, maxHeight: 320)
             }
 
-            HStack {
-                Text("Nothing needs to be organized.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(CalmTheme.secondaryText)
-                Spacer()
-                Text("\(state.brainDump.count)/\(limit)")
-                    .font(.system(size: 13, weight: .medium, design: .monospaced))
-                    .foregroundStyle(CalmTheme.secondaryText)
-            }
+            Text("Keep going until your body feels a little lighter.")
+                .font(.system(size: 13))
+                .foregroundStyle(CalmTheme.secondaryText)
         }
-    }
-
-    private var limitedBrainDump: Binding<String> {
-        Binding(
-            get: { state.brainDump },
-            set: { newValue in
-                state.brainDump = String(newValue.prefix(limit))
-            }
-        )
     }
 }
 
@@ -226,6 +210,7 @@ private struct ChooseActionStep: View {
             TextField("Example: Reply with one line to Alex", text: limitedAction)
                 .textInputAutocapitalization(.sentences)
                 .accessibilityIdentifier("actionTextField")
+                .foregroundStyle(CalmTheme.primaryText)
                 .padding(14)
                 .background(CalmTheme.background.opacity(0.65))
                 .clipShape(RoundedRectangle(cornerRadius: 14))

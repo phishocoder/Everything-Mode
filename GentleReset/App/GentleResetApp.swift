@@ -8,6 +8,7 @@ struct GentleResetApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(resetState)
+                .preferredColorScheme(.light)
         }
     }
 }
