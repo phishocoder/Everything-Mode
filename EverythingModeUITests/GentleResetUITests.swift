@@ -1,6 +1,6 @@
 import XCTest
 
-final class GentleResetUITests: XCTestCase {
+final class EverythingModeUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
@@ -13,11 +13,8 @@ final class GentleResetUITests: XCTestCase {
         XCTAssertTrue(app.buttons["beginResetButton"].waitForExistence(timeout: 2))
         app.buttons["beginResetButton"].tap()
 
-        let inhaleLabel = app.staticTexts["Breathe in"]
-        let exhaleLabel = app.staticTexts["Breathe out"]
-        XCTAssertTrue(
-            inhaleLabel.waitForExistence(timeout: 2) || exhaleLabel.waitForExistence(timeout: 2)
-        )
+        XCTAssertTrue(app.buttons["skipBreathingButton"].waitForExistence(timeout: 2))
+        app.buttons["skipBreathingButton"].tap()
 
         XCTAssertTrue(app.staticTexts["Want me to help sort what's weighing on you?"].waitForExistence(timeout: 12))
         app.buttons["skipTranslationButton"].tap()

@@ -24,9 +24,9 @@ The translation output is constrained to:
 ## Free vs Paid (V1)
 - Free:
   - Unlimited regulation
-  - 1 translation per day
-  - Snapshot visibility limited to today
+  - Translation prompt + clean exit
 - Paid (placeholder only):
+  - Backend-powered Admin Snapshot translation
   - History
   - Weekly summaries
   - Admin grouping
@@ -41,23 +41,23 @@ The translation output is constrained to:
   - “Everything piling up?”
 
 ## Architecture
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/App/RootView.swift`: loop screens and transitions
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/ViewModel/EverythingModeViewModel.swift`: state machine, pacing, gating
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Services/AITranslationService.swift`: OpenAI translation call + JSON parsing
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Services/ReminderService.swift`: daily notification scheduling
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Model/ResetState.swift`: domain models + local storage
+- `/Users/philshobo/Desktop/Everything Mode/EverythingMode/App/RootView.swift`: loop screens and transitions
+- `/Users/philshobo/Desktop/Everything Mode/EverythingMode/ViewModel/EverythingModeViewModel.swift`: state machine, pacing, gating
+- `/Users/philshobo/Desktop/Everything Mode/EverythingMode/Services/AITranslationService.swift`: OpenAI translation call + JSON parsing
+- `/Users/philshobo/Desktop/Everything Mode/EverythingMode/Services/ReminderService.swift`: daily notification scheduling
+- `/Users/philshobo/Desktop/Everything Mode/EverythingMode/Model/ResetState.swift`: domain models + local storage
 
-## API Key
-For translation, enter an OpenAI API key in the translation screen.
-The key is saved locally on-device using `UserDefaults` for V1 simplicity.
+## AI Access
+No API key entry exists in-app.
+Translation is designed to run through a paid backend integration.
 
 ## Run
 ```bash
 xcodegen generate
-open GentleReset.xcodeproj
+open "everything mode".xcodeproj
 ```
 
 ## Test
 ```bash
-xcodebuild -project "GentleReset.xcodeproj" -scheme "GentleReset" -destination 'platform=iOS Simulator,name=iPhone 17' test
+xcodebuild -project "everything mode".xcodeproj -scheme "everything mode" -destination 'platform=iOS Simulator,name=iPhone 17' test
 ```

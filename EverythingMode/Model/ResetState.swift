@@ -60,7 +60,6 @@ struct ResetStorage {
         static let reminderEnabled = "everything_mode.v4_reminder_enabled"
         static let translationDate = "everything_mode.v4_translation_date"
         static let paidUnlocked = "everything_mode.v4_paid_unlocked"
-        static let apiKey = "everything_mode.v4_api_key"
     }
 
     private let defaults: UserDefaults
@@ -117,13 +116,5 @@ struct ResetStorage {
 
     func savePaidUnlocked(_ unlocked: Bool) {
         defaults.set(unlocked, forKey: Keys.paidUnlocked)
-    }
-
-    func loadAPIKey() -> String {
-        defaults.string(forKey: Keys.apiKey) ?? ""
-    }
-
-    func saveAPIKey(_ key: String) {
-        defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: Keys.apiKey)
     }
 }

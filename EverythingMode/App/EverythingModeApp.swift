@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct GentleResetApp: App {
+struct EverythingModeApp: App {
     @StateObject private var viewModel: EverythingModeViewModel
 
     init() {

@@ -18,8 +18,6 @@ final class EverythingModeViewModel: ObservableObject {
     @Published private(set) var isReminderEnabled = false
     @Published private(set) var isPaidUnlocked = false
 
-    @Published var apiKey: String = ""
-
     private var breathingTask: Task<Void, Never>?
     private let storage: ResetStorage
     private let reminderService: ReminderService
@@ -47,7 +45,7 @@ final class EverythingModeViewModel: ObservableObject {
         if isPaidUnlocked {
             return "Everything Mode Plus"
         }
-        return canTranslateToday ? "1 translation available today" : "Free translation used today"
+        return "Regulation always free"
     }
 
     var canTranslateToday: Bool {
@@ -62,12 +60,25 @@ final class EverythingModeViewModel: ObservableObject {
         startBreathingLoop()
     }
 
+    func skipRegulation() {
+        stopBreathingLoop()
+        elapsedSeconds = Int(regulationDuration)
+        LightHaptics.tap()
+        step = .translatePrompt
+    }
+
     func skipTranslation() {
         LightHaptics.tap()
         step = .exit
     }
 
     func chooseTranslation() {
+        guard isPaidUnlocked else {
+            translationError = "Admin Snapshot is part of Everything Mode Plus."
+            step = .translateResult
+            return
+        }
+
         guard canTranslateToday else {
             translationError = "Free plan includes one Admin Snapshot per day."
             step = .translateResult
@@ -81,6 +92,11 @@ final class EverythingModeViewModel: ObservableObject {
 
     func runTranslation() {
         guard !isTranslating else { return }
+        guard isPaidUnlocked else {
+            translationError = "Admin Snapshot is part of Everything Mode Plus."
+            step = .translateResult
+            return
+        }
 
         let trimmed = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -90,11 +106,10 @@ final class EverythingModeViewModel: ObservableObject {
 
         isTranslating = true
         translationError = ""
-        storage.saveAPIKey(apiKey)
 
         Task {
             do {
-                let built = try await translator.buildSnapshot(from: trimmed, apiKey: apiKey)
+                let built = try await translator.buildSnapshot(from: trimmed)
                 snapshot = built
                 storage.saveLatestSnapshot(built)
                 if !isPaidUnlocked {
@@ -195,7 +210,6 @@ final class EverythingModeViewModel: ObservableObject {
             rawInput = draft.rawInput
         }
 
-        apiKey = storage.loadAPIKey()
         isReminderEnabled = storage.loadReminderEnabled()
         isPaidUnlocked = storage.loadPaidUnlocked()
 

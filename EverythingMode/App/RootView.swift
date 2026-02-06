@@ -111,6 +111,13 @@ private struct BreatheStep: View {
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
+            Button("Skip breathing") {
+                viewModel.skipRegulation()
+            }
+            .buttonStyle(SecondaryButtonStyle())
+            .padding(.horizontal, 24)
+            .accessibilityIdentifier("skipBreathingButton")
+
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -172,20 +179,6 @@ private struct TranslateInputStep: View {
                         .stroke(CalmTheme.whiteStroke, lineWidth: 1)
                 )
                 .accessibilityIdentifier("rawInputField")
-
-            SecureField("OpenAI API key", text: $viewModel.apiKey)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 11)
-                .background(CalmTheme.whiteSoft)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(CalmTheme.whiteStroke, lineWidth: 1)
-                )
-                .accessibilityIdentifier("apiKeyField")
 
             if !viewModel.translationError.isEmpty {
                 Text(viewModel.translationError)
@@ -254,6 +247,7 @@ private struct TranslateResultStep: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Everything Mode Plus (coming soon)")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    Text("- Backend-powered Admin Snapshot")
                     Text("- Snapshot history")
                     Text("- Weekly summaries")
                     Text("- Admin grouping")

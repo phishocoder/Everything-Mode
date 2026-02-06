@@ -8,13 +8,13 @@ struct AdminSnapshotPayload: Codable {
 }
 
 enum AITranslationError: LocalizedError {
-    case missingAPIKey
+    case backendNotConfigured
     case invalidResponse
 
     var errorDescription: String? {
         switch self {
-        case .missingAPIKey:
-            return "Add your OpenAI API key to translate."
+        case .backendNotConfigured:
+            return "Translation backend is not configured yet."
         case .invalidResponse:
             return "Could not parse a usable snapshot."
         }
@@ -25,15 +25,17 @@ struct AITranslationService {
     private let session: URLSession
     private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
     private let model = "gpt-4.1-mini"
+    private let apiKey: String?
 
-    init(session: URLSession = .shared) {
+    init(session: URLSession = .shared, apiKey: String? = ProcessInfo.processInfo.environment["OPENAI_API_KEY"]) {
         self.session = session
+        self.apiKey = apiKey
     }
 
-    func buildSnapshot(from rawInput: String, apiKey: String) async throws -> AdminSnapshot {
+    func buildSnapshot(from rawInput: String) async throws -> AdminSnapshot {
         let trimmed = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw AITranslationError.missingAPIKey
+        guard let apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw AITranslationError.backendNotConfigured
         }
 
         let body = ResponsesRequest(
