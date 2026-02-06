@@ -245,12 +245,11 @@ private struct TranslateResultStep: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Everything Mode Plus (coming soon)")
+                    Text("Admin Snapshot beta")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    Text("- Backend-powered Admin Snapshot")
-                    Text("- Snapshot history")
-                    Text("- Weekly summaries")
-                    Text("- Admin grouping")
+                    Text("- One snapshot per day")
+                    Text("- Unlimited regulation")
+                    Text("- More history coming later")
                 }
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(CalmTheme.secondaryText)

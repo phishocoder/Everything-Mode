@@ -14,7 +14,7 @@ enum AITranslationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .backendNotConfigured:
-            return "Translation backend is not configured yet."
+            return "Translation backend key is not configured yet."
         case .invalidResponse:
             return "Could not parse a usable snapshot."
         }

@@ -16,7 +16,6 @@ final class EverythingModeViewModel: ObservableObject {
     @Published private(set) var isTranslating = false
     @Published private(set) var translationError = ""
     @Published private(set) var isReminderEnabled = false
-    @Published private(set) var isPaidUnlocked = false
 
     private var breathingTask: Task<Void, Never>?
     private let storage: ResetStorage
@@ -42,14 +41,10 @@ final class EverythingModeViewModel: ObservableObject {
     }
 
     var translationsRemainingText: String {
-        if isPaidUnlocked {
-            return "Everything Mode Plus"
-        }
-        return "Regulation always free"
+        canTranslateToday ? "Beta: 1 snapshot available" : "Beta snapshot used today"
     }
 
     var canTranslateToday: Bool {
-        guard !isPaidUnlocked else { return true }
         guard let lastDate = storage.loadLastTranslationDate() else { return true }
         return !Calendar.current.isDateInToday(lastDate)
     }
@@ -73,14 +68,8 @@ final class EverythingModeViewModel: ObservableObject {
     }
 
     func chooseTranslation() {
-        guard isPaidUnlocked else {
-            translationError = "Admin Snapshot is part of Everything Mode Plus."
-            step = .translateResult
-            return
-        }
-
         guard canTranslateToday else {
-            translationError = "Free plan includes one Admin Snapshot per day."
+            translationError = "Beta allows one Admin Snapshot per day."
             step = .translateResult
             return
         }
@@ -92,11 +81,6 @@ final class EverythingModeViewModel: ObservableObject {
 
     func runTranslation() {
         guard !isTranslating else { return }
-        guard isPaidUnlocked else {
-            translationError = "Admin Snapshot is part of Everything Mode Plus."
-            step = .translateResult
-            return
-        }
 
         let trimmed = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -112,9 +96,7 @@ final class EverythingModeViewModel: ObservableObject {
                 let built = try await translator.buildSnapshot(from: trimmed)
                 snapshot = built
                 storage.saveLatestSnapshot(built)
-                if !isPaidUnlocked {
-                    storage.saveLastTranslationDate(Date())
-                }
+                storage.saveLastTranslationDate(Date())
                 LightHaptics.complete()
                 step = .translateResult
             } catch {
@@ -211,12 +193,9 @@ final class EverythingModeViewModel: ObservableObject {
         }
 
         isReminderEnabled = storage.loadReminderEnabled()
-        isPaidUnlocked = storage.loadPaidUnlocked()
 
-        if let latest = storage.loadLatestSnapshot() {
-            if isPaidUnlocked || Calendar.current.isDateInToday(latest.createdAt) {
-                snapshot = latest
-            }
+        if let latest = storage.loadLatestSnapshot(), Calendar.current.isDateInToday(latest.createdAt) {
+            snapshot = latest
         }
     }
 }

@@ -24,9 +24,8 @@ The translation output is constrained to:
 ## Free vs Paid (V1)
 - Free:
   - Unlimited regulation
-  - Translation prompt + clean exit
+  - 1 Admin Snapshot per day (beta)
 - Paid (placeholder only):
-  - Backend-powered Admin Snapshot translation
   - History
   - Weekly summaries
   - Admin grouping
@@ -49,7 +48,7 @@ The translation output is constrained to:
 
 ## AI Access
 No API key entry exists in-app.
-Translation is designed to run through a paid backend integration.
+For beta testing, translation reads `OPENAI_API_KEY` from the app process environment.
 
 ## Run
 ```bash
