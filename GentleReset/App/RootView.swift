@@ -4,7 +4,7 @@ struct RootView: View {
     @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
-        ScreenContainer(mood: viewModel.selectedMood) {
+        ScreenContainer {
             VStack(spacing: 18) {
                 if viewModel.step != .breathe {
                     titleBar
@@ -14,12 +14,16 @@ struct RootView: View {
                     switch viewModel.step {
                     case .welcome:
                         WelcomeStep()
-                    case .mood:
-                        MoodStep()
                     case .breathe:
                         BreatheStep()
-                    case .complete:
-                        CompleteStep()
+                    case .translatePrompt:
+                        TranslatePromptStep()
+                    case .translateInput:
+                        TranslateInputStep()
+                    case .translateResult:
+                        TranslateResultStep()
+                    case .exit:
+                        ExitStep()
                     }
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.98)))
@@ -38,7 +42,7 @@ struct RootView: View {
                 .font(.system(size: 30, weight: .bold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
             Spacer()
-            Text(viewModel.shortSummaryText)
+            Text(viewModel.translationsRemainingText)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(CalmTheme.secondaryText.opacity(0.9))
         }
@@ -50,74 +54,26 @@ private struct WelcomeStep: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Text("Everything feels like too much.")
+            Text("Everything piling up?")
                 .font(.system(size: 31, weight: .bold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("When overload hits, this gives your nervous system one calm minute. No fixing, no planning, just a clean pause.")
+            Text("This app does two things: calm the noise, then turn the mess into one usable admin snapshot.")
                 .font(.system(size: 17, weight: .medium, design: .rounded))
                 .foregroundStyle(CalmTheme.secondaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("About 60 seconds")
+            Text("About 2 minutes")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.secondaryText.opacity(0.9))
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button("Start reset") {
-                viewModel.beginFromWelcome()
+            Button("Start 60-second reset") {
+                viewModel.beginReset()
             }
             .buttonStyle(PrimaryButtonStyle())
             .accessibilityIdentifier("beginResetButton")
-        }
-        .padding(18)
-        .glassCard()
-    }
-}
-
-private struct MoodStep: View {
-    @EnvironmentObject private var viewModel: EverythingModeViewModel
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("Pick what this feels like right now")
-                .font(.system(size: 28, weight: .semibold, design: .rounded))
-                .foregroundStyle(CalmTheme.primaryText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text("Any option works. Tap once and the reset begins.")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundStyle(CalmTheme.secondaryText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(spacing: 10) {
-                ForEach(EmotionalState.allCases) { mood in
-                    Button {
-                        // Choice should feel approximate, not diagnostic.
-                        viewModel.selectMoodAndStart(mood)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(mood.title)
-                                .font(.system(size: 19, weight: .semibold, design: .rounded))
-                                .foregroundStyle(CalmTheme.primaryText)
-                            Text(mood.subtitle)
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundStyle(CalmTheme.secondaryText)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(14)
-                        .background(CalmTheme.whiteSoft)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(CalmTheme.whiteStroke, lineWidth: 1)
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("state_\(mood.rawValue)")
-                }
-            }
         }
         .padding(18)
         .glassCard()
@@ -128,7 +84,7 @@ private struct BreatheStep: View {
     @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 26) {
             Spacer(minLength: 0)
 
             ZStack {
@@ -158,24 +114,203 @@ private struct BreatheStep: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityIdentifier("breathingScreen")
     }
 }
 
-private struct CompleteStep: View {
+private struct TranslatePromptStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Text("Want me to help sort what's weighing on you?")
+                .font(.system(size: 29, weight: .bold, design: .rounded))
+                .foregroundStyle(CalmTheme.primaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("One raw note in. One clear admin snapshot out.")
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(CalmTheme.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button("Yes, sort it") {
+                viewModel.chooseTranslation()
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .accessibilityIdentifier("sortItButton")
+
+            Button("Skip and exit") {
+                viewModel.skipTranslation()
+            }
+            .buttonStyle(SecondaryButtonStyle())
+            .accessibilityIdentifier("skipTranslationButton")
+        }
+        .padding(18)
+        .glassCard()
+    }
+}
+
+private struct TranslateInputStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("Drop the messy version")
+                .font(.system(size: 27, weight: .bold, design: .rounded))
+                .foregroundStyle(CalmTheme.primaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            TextEditor(text: $viewModel.rawInput)
+                .textInputAutocapitalization(.sentences)
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(CalmTheme.primaryText)
+                .frame(minHeight: 150)
+                .padding(10)
+                .background(CalmTheme.whiteSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(CalmTheme.whiteStroke, lineWidth: 1)
+                )
+                .accessibilityIdentifier("rawInputField")
+
+            SecureField("OpenAI API key", text: $viewModel.apiKey)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 11)
+                .background(CalmTheme.whiteSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(CalmTheme.whiteStroke, lineWidth: 1)
+                )
+                .accessibilityIdentifier("apiKeyField")
+
+            if !viewModel.translationError.isEmpty {
+                Text(viewModel.translationError)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(red: 0.56, green: 0.18, blue: 0.16))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Button(viewModel.isTranslating ? "Building snapshot..." : "Build Admin Snapshot") {
+                viewModel.runTranslation()
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(viewModel.isTranslating)
+            .opacity(viewModel.isTranslating ? 0.6 : 1)
+            .accessibilityIdentifier("buildSnapshotButton")
+        }
+        .padding(18)
+        .glassCard()
+    }
+}
+
+private struct TranslateResultStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    var body: some View {
+        VStack(spacing: 14) {
+            if let snapshot = viewModel.snapshot, viewModel.translationError.isEmpty {
+                Text("What's actually here")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(CalmTheme.primaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                SnapshotSection(title: "PRESSURE SOURCES") {
+                    VStack(alignment: .leading, spacing: 5) {
+                        ForEach(snapshot.pressureItems, id: \.self) { item in
+                            Text("- \(item)")
+                        }
+                        Text("- Emotional weight: \(snapshot.emotionalWeight)")
+                    }
+                }
+
+                SnapshotSection(title: "WHAT CAN WAIT") {
+                    Text(snapshot.safeToIgnoreToday)
+                }
+
+                SnapshotSection(title: "NEXT MOVE") {
+                    Text(snapshot.nextMove)
+                }
+
+                Button("Done") {
+                    viewModel.finishSession()
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .accessibilityIdentifier("doneSnapshotButton")
+            } else {
+                Text("Admin Snapshot unavailable")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(CalmTheme.primaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(viewModel.translationError)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(CalmTheme.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Everything Mode Plus (coming soon)")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    Text("- Snapshot history")
+                    Text("- Weekly summaries")
+                    Text("- Admin grouping")
+                }
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(CalmTheme.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+                .background(CalmTheme.whiteSoft)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                Button("Close") {
+                    viewModel.finishSession()
+                }
+                .buttonStyle(PrimaryButtonStyle())
+            }
+        }
+        .padding(18)
+        .glassCard()
+    }
+}
+
+private struct SnapshotSection<Content: View>: View {
+    let title: String
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(CalmTheme.secondaryText)
+            content
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(CalmTheme.primaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(CalmTheme.whiteSoft)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+private struct ExitStep: View {
     @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Reset complete.")
+            Text("Done for now.")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
 
-            Text("You can close the app now.")
+            Text("You're clear enough for the next move.")
                 .font(.system(size: 17, weight: .medium, design: .rounded))
                 .foregroundStyle(CalmTheme.secondaryText)
 
-            Button(viewModel.isReminderEnabled ? "Daily reminder on" : "Enable daily 60-second reminder") {
+            Button(viewModel.isReminderEnabled ? "Daily reminder on" : "Enable daily nudge") {
                 if viewModel.isReminderEnabled {
                     viewModel.disableReminder()
                 } else {
@@ -185,11 +320,11 @@ private struct CompleteStep: View {
             .buttonStyle(SecondaryButtonStyle())
             .accessibilityIdentifier("toggleReminderButton")
 
-            Button("Run another reset") {
-                viewModel.resetAgain()
+            Button("New reset") {
+                viewModel.startOver()
             }
             .buttonStyle(PrimaryButtonStyle())
-            .accessibilityIdentifier("resetAgainButton")
+            .accessibilityIdentifier("startOverButton")
         }
         .padding(18)
         .glassCard()

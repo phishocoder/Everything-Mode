@@ -2,44 +2,11 @@ import Foundation
 
 enum ResetStep: Int {
     case welcome
-    case mood
     case breathe
-    case complete
-}
-
-enum EmotionalState: String, CaseIterable, Identifiable, Codable {
-    case racing
-    case heavy
-    case numb
-    case scattered
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .racing:
-            return "Racing"
-        case .heavy:
-            return "Heavy"
-        case .numb:
-            return "Numb"
-        case .scattered:
-            return "Scattered"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .racing:
-            return "Thoughts are sprinting and won't slow down."
-        case .heavy:
-            return "Everything feels weighty, even small things."
-        case .numb:
-            return "You feel checked out or shut down."
-        case .scattered:
-            return "Too many tabs open in your head."
-        }
-    }
+    case translatePrompt
+    case translateInput
+    case translateResult
+    case exit
 }
 
 enum BreathPhase {
@@ -75,19 +42,25 @@ enum BreathPhase {
 }
 
 struct ResetDraft: Codable {
-    var mood: EmotionalState?
+    var rawInput: String
 }
 
-struct LastResetSummary: Codable {
-    var timestamp: Date
-    var mood: EmotionalState
+struct AdminSnapshot: Codable {
+    var createdAt: Date
+    var pressureItems: [String]
+    var emotionalWeight: String
+    var safeToIgnoreToday: String
+    var nextMove: String
 }
 
 struct ResetStorage {
     private enum Keys {
-        static let draft = "everything_mode.v3_draft"
-        static let summary = "everything_mode.v3_summary"
-        static let reminderEnabled = "everything_mode.v3_reminder_enabled"
+        static let draft = "everything_mode.v4_draft"
+        static let latestSnapshot = "everything_mode.v4_latest_snapshot"
+        static let reminderEnabled = "everything_mode.v4_reminder_enabled"
+        static let translationDate = "everything_mode.v4_translation_date"
+        static let paidUnlocked = "everything_mode.v4_paid_unlocked"
+        static let apiKey = "everything_mode.v4_api_key"
     }
 
     private let defaults: UserDefaults
@@ -112,14 +85,14 @@ struct ResetStorage {
         defaults.removeObject(forKey: Keys.draft)
     }
 
-    func loadSummary() -> LastResetSummary? {
-        guard let data = defaults.data(forKey: Keys.summary) else { return nil }
-        return try? decoder.decode(LastResetSummary.self, from: data)
+    func loadLatestSnapshot() -> AdminSnapshot? {
+        guard let data = defaults.data(forKey: Keys.latestSnapshot) else { return nil }
+        return try? decoder.decode(AdminSnapshot.self, from: data)
     }
 
-    func saveSummary(_ summary: LastResetSummary) {
-        guard let data = try? encoder.encode(summary) else { return }
-        defaults.set(data, forKey: Keys.summary)
+    func saveLatestSnapshot(_ snapshot: AdminSnapshot) {
+        guard let data = try? encoder.encode(snapshot) else { return }
+        defaults.set(data, forKey: Keys.latestSnapshot)
     }
 
     func loadReminderEnabled() -> Bool {
@@ -128,5 +101,29 @@ struct ResetStorage {
 
     func saveReminderEnabled(_ enabled: Bool) {
         defaults.set(enabled, forKey: Keys.reminderEnabled)
+    }
+
+    func loadLastTranslationDate() -> Date? {
+        defaults.object(forKey: Keys.translationDate) as? Date
+    }
+
+    func saveLastTranslationDate(_ date: Date) {
+        defaults.set(date, forKey: Keys.translationDate)
+    }
+
+    func loadPaidUnlocked() -> Bool {
+        defaults.bool(forKey: Keys.paidUnlocked)
+    }
+
+    func savePaidUnlocked(_ unlocked: Bool) {
+        defaults.set(unlocked, forKey: Keys.paidUnlocked)
+    }
+
+    func loadAPIKey() -> String {
+        defaults.string(forKey: Keys.apiKey) ?? ""
+    }
+
+    func saveAPIKey(_ key: String) {
+        defaults.set(key.trimmingCharacters(in: .whitespacesAndNewlines), forKey: Keys.apiKey)
     }
 }

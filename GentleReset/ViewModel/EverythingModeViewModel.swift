@@ -4,56 +4,109 @@ import SwiftUI
 @MainActor
 final class EverythingModeViewModel: ObservableObject {
     @Published var step: ResetStep = .welcome
-    @Published var selectedMood: EmotionalState? {
+    @Published var rawInput: String = "" {
         didSet { persistDraft() }
     }
 
     @Published var breathPhase: BreathPhase = .inhale
     @Published var breathScale: CGFloat = 0.88
     @Published var elapsedSeconds: Int = 0
+
+    @Published private(set) var snapshot: AdminSnapshot?
+    @Published private(set) var isTranslating = false
+    @Published private(set) var translationError = ""
     @Published private(set) var isReminderEnabled = false
-    @Published private(set) var lastSummary: LastResetSummary?
+    @Published private(set) var isPaidUnlocked = false
+
+    @Published var apiKey: String = ""
 
     private var breathingTask: Task<Void, Never>?
     private let storage: ResetStorage
     private let reminderService: ReminderService
+    private let translator: AITranslationService
     private let regulationDuration: TimeInterval
 
     init(
         storage: ResetStorage = ResetStorage(),
         reminderService: ReminderService = .shared,
-        regulationDuration: TimeInterval = 60
+        translator: AITranslationService = AITranslationService(),
+        regulationDuration: TimeInterval = 75
     ) {
         self.storage = storage
         self.reminderService = reminderService
+        self.translator = translator
         self.regulationDuration = regulationDuration
         restoreState()
-    }
-
-    var shortSummaryText: String {
-        guard let lastSummary else {
-            return "No streaks. No score."
-        }
-
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .short
-        return "Last reset \(formatter.localizedString(for: lastSummary.timestamp, relativeTo: Date()))"
     }
 
     var progress: Double {
         min(Double(elapsedSeconds) / regulationDuration, 1)
     }
 
-    func beginFromWelcome() {
-        LightHaptics.tap()
-        step = .mood
+    var translationsRemainingText: String {
+        if isPaidUnlocked {
+            return "Everything Mode Plus"
+        }
+        return canTranslateToday ? "1 translation available today" : "Free translation used today"
     }
 
-    func selectMoodAndStart(_ mood: EmotionalState) {
-        selectedMood = mood
+    var canTranslateToday: Bool {
+        guard !isPaidUnlocked else { return true }
+        guard let lastDate = storage.loadLastTranslationDate() else { return true }
+        return !Calendar.current.isDateInToday(lastDate)
+    }
+
+    func beginReset() {
         LightHaptics.tap()
         step = .breathe
         startBreathingLoop()
+    }
+
+    func skipTranslation() {
+        LightHaptics.tap()
+        step = .exit
+    }
+
+    func chooseTranslation() {
+        guard canTranslateToday else {
+            translationError = "Free plan includes one Admin Snapshot per day."
+            step = .translateResult
+            return
+        }
+
+        translationError = ""
+        LightHaptics.tap()
+        step = .translateInput
+    }
+
+    func runTranslation() {
+        guard !isTranslating else { return }
+
+        let trimmed = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            translationError = "Drop a quick messy note first."
+            return
+        }
+
+        isTranslating = true
+        translationError = ""
+        storage.saveAPIKey(apiKey)
+
+        Task {
+            do {
+                let built = try await translator.buildSnapshot(from: trimmed, apiKey: apiKey)
+                snapshot = built
+                storage.saveLatestSnapshot(built)
+                if !isPaidUnlocked {
+                    storage.saveLastTranslationDate(Date())
+                }
+                LightHaptics.complete()
+                step = .translateResult
+            } catch {
+                translationError = error.localizedDescription
+            }
+            isTranslating = false
+        }
     }
 
     func enableReminder() {
@@ -73,10 +126,21 @@ final class EverythingModeViewModel: ObservableObject {
         storage.saveReminderEnabled(false)
     }
 
-    func resetAgain() {
+    func startOver() {
+        stopBreathingLoop()
+        elapsedSeconds = 0
+        breathScale = 0.88
+        breathPhase = .inhale
+        rawInput = ""
+        translationError = ""
         step = .welcome
-        completedResetCleanup()
+        storage.clearDraft()
         LightHaptics.tap()
+    }
+
+    func finishSession() {
+        LightHaptics.tap()
+        step = .exit
     }
 
     private func startBreathingLoop() {
@@ -113,16 +177,8 @@ final class EverythingModeViewModel: ObservableObject {
 
     private func finishRegulation() {
         stopBreathingLoop()
-
-        if let mood = selectedMood {
-            let summary = LastResetSummary(timestamp: Date(), mood: mood)
-            storage.saveSummary(summary)
-            lastSummary = summary
-        }
-
-        storage.clearDraft()
         LightHaptics.complete()
-        step = .complete
+        step = .translatePrompt
     }
 
     private func stopBreathingLoop() {
@@ -130,26 +186,23 @@ final class EverythingModeViewModel: ObservableObject {
         breathingTask = nil
     }
 
-    private func completedResetCleanup() {
-        stopBreathingLoop()
-        selectedMood = nil
-        elapsedSeconds = 0
-        breathScale = 0.88
-        breathPhase = .inhale
-        storage.clearDraft()
-    }
-
     private func persistDraft() {
-        let draft = ResetDraft(mood: selectedMood)
-        storage.saveDraft(draft)
+        storage.saveDraft(ResetDraft(rawInput: rawInput))
     }
 
     private func restoreState() {
         if let draft = storage.loadDraft() {
-            selectedMood = draft.mood
+            rawInput = draft.rawInput
         }
 
+        apiKey = storage.loadAPIKey()
         isReminderEnabled = storage.loadReminderEnabled()
-        lastSummary = storage.loadSummary()
+        isPaidUnlocked = storage.loadPaidUnlocked()
+
+        if let latest = storage.loadLatestSnapshot() {
+            if isPaidUnlocked || Calendar.current.isDateInToday(latest.createdAt) {
+                snapshot = latest
+            }
+        }
     }
 }

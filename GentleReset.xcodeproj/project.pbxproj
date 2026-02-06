@@ -16,6 +16,7 @@
 		B99F73F18F0D2995168BFD90 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 249C03A16EA9014AAD3605FC /* Haptics.swift */; };
 		C54D17A5CEC1EC3F6FDB7A4B /* EverythingModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7440A3AEB75FEA09E4C0FB3C /* EverythingModeViewModel.swift */; };
 		E4FBA9B19CFFB0D42E9E62D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 432A893E3D13F1763A317BBD /* Assets.xcassets */; };
+		F86A3B21A2E9AA1E413D7A71 /* AITranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C25510245210187B2D5EDF2B /* AITranslationService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		6A7ADCA4C71880E04C5C8E94 /* GentleResetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GentleResetUITests.swift; sourceTree = "<group>"; };
 		7440A3AEB75FEA09E4C0FB3C /* EverythingModeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeViewModel.swift; sourceTree = "<group>"; };
 		B7B3516DCAB6DB2FC1C4B1A1 /* CalmTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalmTheme.swift; sourceTree = "<group>"; };
+		C25510245210187B2D5EDF2B /* AITranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AITranslationService.swift; sourceTree = "<group>"; };
 		D96EB3F8CD16B3B87CB9B97B /* GentleResetUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = GentleResetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DF617C568A548DFFF20C6C65 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		E68B3F1479583D8C4AA28343 /* ResetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetState.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 		1FD17729F012389F8FE469EA /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				C25510245210187B2D5EDF2B /* AITranslationService.swift */,
 				5120C76854AD9098BE883277 /* ReminderService.swift */,
 			);
 			path = Services;
@@ -227,6 +230,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F86A3B21A2E9AA1E413D7A71 /* AITranslationService.swift in Sources */,
 				1009597984A7B6F1E546E228 /* CalmTheme.swift in Sources */,
 				C54D17A5CEC1EC3F6FDB7A4B /* EverythingModeViewModel.swift in Sources */,
 				18727926269C5EF5D17B7054 /* GentleResetApp.swift in Sources */,

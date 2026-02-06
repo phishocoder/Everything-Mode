@@ -7,7 +7,7 @@ struct GentleResetApp: App {
     init() {
         let isUITest = ProcessInfo.processInfo.arguments.contains("UITEST_FAST")
         _viewModel = StateObject(
-            wrappedValue: EverythingModeViewModel(regulationDuration: isUITest ? 6 : 60)
+            wrappedValue: EverythingModeViewModel(regulationDuration: isUITest ? 6 : 75)
         )
     }
 

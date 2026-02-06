@@ -1,30 +1,55 @@
 # Everything Mode
 
-Everything Mode is a private iPhone app for one job: interrupt overload fast and create a felt shift in about one minute.
+Everything Mode is a private iPhone app that runs one loop:
 
-It is intentionally not a planner, task manager, or habit app.
+1. Regulate overwhelm (60-90 seconds)
+2. Translate chaos into one concrete admin artifact
+3. Exit cleanly
 
-## V1 Flow (state-shift first)
-1. Welcome with a clear 60-second expectation
-2. Pick the current overload state (tap once)
-3. Auto-start full-screen breathing regulation with haptics
-4. Clean completion with optional daily reminder toggle
+It is not a planner, journal, or habit system.
 
-## Product Decisions
-- Near-zero thinking at entry: no typing, no setup, no extra start confirmation
-- Tap-to-regulate: mood choice immediately starts the reset sequence
-- Regulation is bounded and automatic to prevent extra cognitive decisions
-- Local-only storage (`UserDefaults`) for last reset summary and reminder preference
-- Optional local daily reminder notification (`Pause for 60 seconds?`) with neutral tone
-- No account, no analytics, no cloud, no streaks
+## Core Loop
+- `Welcome`: sets expectation and starts immediately
+- `Regulate`: auto-paced breathing + subtle haptics, no typing
+- `Translate`: optional AI-powered **Admin Snapshot** from one raw input
+- `Exit`: neutral close with optional daily reminder toggle
+
+## Admin Snapshot Output
+The translation output is constrained to:
+- `TITLE`: What's actually here
+- `PRESSURE SOURCES`: 1-2 admin items + 1 emotional weight
+- `WHAT CAN WAIT`: 1 thing safe to ignore today
+- `NEXT MOVE`: 1 practical action
+
+## Free vs Paid (V1)
+- Free:
+  - Unlimited regulation
+  - 1 translation per day
+  - Snapshot visibility limited to today
+- Paid (placeholder only):
+  - History
+  - Weekly summaries
+  - Admin grouping
+
+## AI Constraints
+- AI is used only in translation.
+- Regulation never calls AI.
+- Translation uses low temperature and strict JSON prompting for specificity.
+
+## Trigger
+- Optional daily low-frequency local notification:
+  - “Everything piling up?”
 
 ## Architecture
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Model/ResetState.swift`: domain types + local storage
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/ViewModel/EverythingModeViewModel.swift`: flow orchestration + regulation engine
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/App/RootView.swift`: screens, transitions, and pacing
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Services/ReminderService.swift`: local notification scheduling
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Style/CalmTheme.swift`: gradients and visual style
-- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Style/Haptics.swift`: tap/breath/complete haptics
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/App/RootView.swift`: loop screens and transitions
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/ViewModel/EverythingModeViewModel.swift`: state machine, pacing, gating
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Services/AITranslationService.swift`: OpenAI translation call + JSON parsing
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Services/ReminderService.swift`: daily notification scheduling
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Model/ResetState.swift`: domain models + local storage
+
+## API Key
+For translation, enter an OpenAI API key in the translation screen.
+The key is saved locally on-device using `UserDefaults` for V1 simplicity.
 
 ## Run
 ```bash

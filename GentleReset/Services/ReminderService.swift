@@ -29,7 +29,7 @@ final class ReminderService {
 
         let content = UNMutableNotificationContent()
         content.title = "Everything Mode"
-        content.body = "Pause for 60 seconds?"
+        content.body = "Everything piling up?"
         content.sound = .default
 
         var components = DateComponents()

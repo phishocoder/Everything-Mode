@@ -5,7 +5,7 @@ final class GentleResetUITests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func testStateShiftFlowCompletes() throws {
+    func testCoreLoopCanExitWithoutTranslation() throws {
         let app = XCUIApplication()
         app.launchArguments.append("UITEST_FAST")
         app.launch()
@@ -13,18 +13,17 @@ final class GentleResetUITests: XCTestCase {
         XCTAssertTrue(app.buttons["beginResetButton"].waitForExistence(timeout: 2))
         app.buttons["beginResetButton"].tap()
 
-        XCTAssertTrue(app.buttons["state_racing"].waitForExistence(timeout: 2))
-        app.buttons["state_racing"].tap()
-
         let inhaleLabel = app.staticTexts["Breathe in"]
         let exhaleLabel = app.staticTexts["Breathe out"]
         XCTAssertTrue(
             inhaleLabel.waitForExistence(timeout: 2) || exhaleLabel.waitForExistence(timeout: 2)
         )
 
-        XCTAssertTrue(app.staticTexts["Reset complete."].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts["Want me to help sort what's weighing on you?"].waitForExistence(timeout: 12))
+        app.buttons["skipTranslationButton"].tap()
 
-        app.buttons["resetAgainButton"].tap()
-        XCTAssertTrue(app.staticTexts["Everything feels like too much."].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Done for now."].waitForExistence(timeout: 2))
+        app.buttons["startOverButton"].tap()
+        XCTAssertTrue(app.staticTexts["Everything piling up?"].waitForExistence(timeout: 2))
     }
 }
