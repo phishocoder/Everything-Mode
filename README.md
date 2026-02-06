@@ -1,29 +1,30 @@
 # Everything Mode
 
-Everything Mode is a private iPhone app for one job:
-shift your state when everything feels like too much.
+Everything Mode is a private iPhone app for one job: interrupt overload fast and create a felt shift in about one minute.
 
-It is not a planner or task system.
+It is intentionally not a planner, task manager, or habit app.
 
-## V1 Flow (minimal, opinionated)
-1. Pick current state (`Racing`, `Heavy`, `Numb`, `Scattered`)
-2. Follow a 60-second breathing pulse (with haptics)
-3. Optional one-line release + one relief choice
-4. Exit
+## V1 Flow (state-shift first)
+1. Welcome with a clear 60-second expectation
+2. Pick the current overload state (tap once)
+3. Auto-start full-screen breathing regulation with haptics
+4. Clean completion with optional daily reminder toggle
 
 ## Product Decisions
-- Fewer screens, less text, one primary action per screen
-- Emotional state shift first, decision second
-- Color mood adapts to selected state for immediate tone change
-- Local-only storage (`UserDefaults`) for draft + last summary
-- No account, no analytics, no notifications, no network calls
+- Near-zero thinking at entry: no typing, no setup, no extra start confirmation
+- Tap-to-regulate: mood choice immediately starts the reset sequence
+- Regulation is bounded and automatic to prevent extra cognitive decisions
+- Local-only storage (`UserDefaults`) for last reset summary and reminder preference
+- Optional local daily reminder notification (`Pause for 60 seconds?`) with neutral tone
+- No account, no analytics, no cloud, no streaks
 
 ## Architecture
-- `Model/ResetState.swift`: domain types + local storage
-- `ViewModel/EverythingModeViewModel.swift`: flow orchestration and breathing engine
-- `App/RootView.swift`: UI and transitions
-- `Style/CalmTheme.swift`: mood gradients and components
-- `Style/Haptics.swift`: tap, breathing, completion haptics
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Model/ResetState.swift`: domain types + local storage
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/ViewModel/EverythingModeViewModel.swift`: flow orchestration + regulation engine
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/App/RootView.swift`: screens, transitions, and pacing
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Services/ReminderService.swift`: local notification scheduling
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Style/CalmTheme.swift`: gradients and visual style
+- `/Users/philshobo/Desktop/Everything Mode/GentleReset/Style/Haptics.swift`: tap/breath/complete haptics
 
 ## Run
 ```bash

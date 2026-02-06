@@ -7,32 +7,27 @@ final class EverythingModeViewModel: ObservableObject {
     @Published var selectedMood: EmotionalState? {
         didSet { persistDraft() }
     }
-    @Published var releaseLine: String = "" {
-        didSet { persistDraft() }
-    }
-    @Published var reliefChoice: ReliefChoice? {
-        didSet { persistDraft() }
-    }
 
     @Published var breathPhase: BreathPhase = .inhale
     @Published var breathScale: CGFloat = 0.88
-    @Published var completedBreathCycles = 0
+    @Published var elapsedSeconds: Int = 0
+    @Published private(set) var isReminderEnabled = false
     @Published private(set) var lastSummary: LastResetSummary?
 
     private var breathingTask: Task<Void, Never>?
     private let storage: ResetStorage
+    private let reminderService: ReminderService
+    private let regulationDuration: TimeInterval
 
-    init(storage: ResetStorage = ResetStorage()) {
+    init(
+        storage: ResetStorage = ResetStorage(),
+        reminderService: ReminderService = .shared,
+        regulationDuration: TimeInterval = 60
+    ) {
         self.storage = storage
+        self.reminderService = reminderService
+        self.regulationDuration = regulationDuration
         restoreState()
-    }
-
-    var canFinishReset: Bool {
-        reliefChoice != nil
-    }
-
-    var canContinueFromBreathing: Bool {
-        completedBreathCycles >= 1
     }
 
     var shortSummaryText: String {
@@ -45,6 +40,10 @@ final class EverythingModeViewModel: ObservableObject {
         return "Last reset \(formatter.localizedString(for: lastSummary.timestamp, relativeTo: Date()))"
     }
 
+    var progress: Double {
+        min(Double(elapsedSeconds) / regulationDuration, 1)
+    }
+
     func beginFromWelcome() {
         LightHaptics.tap()
         step = .mood
@@ -52,43 +51,37 @@ final class EverythingModeViewModel: ObservableObject {
 
     func selectMoodAndStart(_ mood: EmotionalState) {
         selectedMood = mood
-        // Selection should immediately reduce decision load and begin regulation.
         LightHaptics.tap()
         step = .breathe
         startBreathingLoop()
     }
 
-    func continueFromBreathing() {
-        stopBreathingLoop()
-        LightHaptics.tap()
-        step = .release
+    func enableReminder() {
+        Task {
+            let enabled = await reminderService.enableDailyReminder()
+            if enabled {
+                isReminderEnabled = true
+                storage.saveReminderEnabled(true)
+                LightHaptics.tap()
+            }
+        }
     }
 
-    func finishReset() {
-        guard let mood = selectedMood, let reliefChoice else { return }
-
-        let summary = LastResetSummary(timestamp: Date(), mood: mood, reliefChoice: reliefChoice)
-        storage.saveSummary(summary)
-        lastSummary = summary
-        storage.clearDraft()
-        LightHaptics.complete()
-        step = .complete
+    func disableReminder() {
+        reminderService.disableDailyReminder()
+        isReminderEnabled = false
+        storage.saveReminderEnabled(false)
     }
 
     func resetAgain() {
         step = .welcome
-        releaseLine = ""
-        reliefChoice = nil
-        completedBreathCycles = 0
-        breathScale = 0.88
-        breathPhase = .inhale
-        storage.clearDraft()
+        completedResetCleanup()
         LightHaptics.tap()
     }
 
     private func startBreathingLoop() {
         stopBreathingLoop()
-        completedBreathCycles = 0
+        elapsedSeconds = 0
         runBreathPhase(.inhale)
     }
 
@@ -107,12 +100,29 @@ final class EverythingModeViewModel: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(phase.duration * 1_000_000_000))
             guard !Task.isCancelled else { return }
 
-            if phase == .exhale {
-                completedBreathCycles += 1
+            elapsedSeconds += Int(phase.duration)
+
+            if Double(elapsedSeconds) >= regulationDuration {
+                finishRegulation()
+                return
             }
 
             runBreathPhase(phase.next)
         }
+    }
+
+    private func finishRegulation() {
+        stopBreathingLoop()
+
+        if let mood = selectedMood {
+            let summary = LastResetSummary(timestamp: Date(), mood: mood)
+            storage.saveSummary(summary)
+            lastSummary = summary
+        }
+
+        storage.clearDraft()
+        LightHaptics.complete()
+        step = .complete
     }
 
     private func stopBreathingLoop() {
@@ -120,24 +130,26 @@ final class EverythingModeViewModel: ObservableObject {
         breathingTask = nil
     }
 
+    private func completedResetCleanup() {
+        stopBreathingLoop()
+        selectedMood = nil
+        elapsedSeconds = 0
+        breathScale = 0.88
+        breathPhase = .inhale
+        storage.clearDraft()
+    }
+
     private func persistDraft() {
-        let draft = ResetDraft(mood: selectedMood, releaseLine: releaseLine, reliefChoice: reliefChoice)
+        let draft = ResetDraft(mood: selectedMood)
         storage.saveDraft(draft)
     }
 
     private func restoreState() {
         if let draft = storage.loadDraft() {
             selectedMood = draft.mood
-            releaseLine = draft.releaseLine
-            reliefChoice = draft.reliefChoice
-
-            if draft.reliefChoice != nil {
-                step = .release
-            } else if draft.mood != nil {
-                step = .mood
-            }
         }
 
+        isReminderEnabled = storage.loadReminderEnabled()
         lastSummary = storage.loadSummary()
     }
 }

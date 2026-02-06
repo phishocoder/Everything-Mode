@@ -4,7 +4,6 @@ enum ResetStep: Int {
     case welcome
     case mood
     case breathe
-    case release
     case complete
 }
 
@@ -43,25 +42,6 @@ enum EmotionalState: String, CaseIterable, Identifiable, Codable {
     }
 }
 
-enum ReliefChoice: String, CaseIterable, Identifiable, Codable {
-    case twoMinutes
-    case park
-    case release
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .twoMinutes:
-            return "2 min now"
-        case .park:
-            return "Park for later"
-        case .release:
-            return "Not today"
-        }
-    }
-}
-
 enum BreathPhase {
     case inhale
     case exhale
@@ -96,20 +76,18 @@ enum BreathPhase {
 
 struct ResetDraft: Codable {
     var mood: EmotionalState?
-    var releaseLine: String
-    var reliefChoice: ReliefChoice?
 }
 
 struct LastResetSummary: Codable {
     var timestamp: Date
     var mood: EmotionalState
-    var reliefChoice: ReliefChoice
 }
 
 struct ResetStorage {
     private enum Keys {
-        static let draft = "everything_mode.v2_draft"
-        static let summary = "everything_mode.v2_summary"
+        static let draft = "everything_mode.v3_draft"
+        static let summary = "everything_mode.v3_summary"
+        static let reminderEnabled = "everything_mode.v3_reminder_enabled"
     }
 
     private let defaults: UserDefaults
@@ -142,5 +120,13 @@ struct ResetStorage {
     func saveSummary(_ summary: LastResetSummary) {
         guard let data = try? encoder.encode(summary) else { return }
         defaults.set(data, forKey: Keys.summary)
+    }
+
+    func loadReminderEnabled() -> Bool {
+        defaults.bool(forKey: Keys.reminderEnabled)
+    }
+
+    func saveReminderEnabled(_ enabled: Bool) {
+        defaults.set(enabled, forKey: Keys.reminderEnabled)
     }
 }

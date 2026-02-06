@@ -2,7 +2,14 @@ import SwiftUI
 
 @main
 struct GentleResetApp: App {
-    @StateObject private var viewModel = EverythingModeViewModel()
+    @StateObject private var viewModel: EverythingModeViewModel
+
+    init() {
+        let isUITest = ProcessInfo.processInfo.arguments.contains("UITEST_FAST")
+        _viewModel = StateObject(
+            wrappedValue: EverythingModeViewModel(regulationDuration: isUITest ? 6 : 60)
+        )
+    }
 
     var body: some Scene {
         WindowGroup {

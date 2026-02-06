@@ -11,6 +11,7 @@
 		1009597984A7B6F1E546E228 /* CalmTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B3516DCAB6DB2FC1C4B1A1 /* CalmTheme.swift */; };
 		18727926269C5EF5D17B7054 /* GentleResetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D92089FDA29DECA3EF0325 /* GentleResetApp.swift */; };
 		83DBAD816F233CDA362B8F13 /* ResetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E68B3F1479583D8C4AA28343 /* ResetState.swift */; };
+		9109651F377B927F993D3C26 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5120C76854AD9098BE883277 /* ReminderService.swift */; };
 		9DB6FF99E591E27B2668FC88 /* GentleResetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A7ADCA4C71880E04C5C8E94 /* GentleResetUITests.swift */; };
 		B99F73F18F0D2995168BFD90 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 249C03A16EA9014AAD3605FC /* Haptics.swift */; };
 		C54D17A5CEC1EC3F6FDB7A4B /* EverythingModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7440A3AEB75FEA09E4C0FB3C /* EverythingModeViewModel.swift */; };
@@ -31,6 +32,7 @@
 		23D92089FDA29DECA3EF0325 /* GentleResetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GentleResetApp.swift; sourceTree = "<group>"; };
 		249C03A16EA9014AAD3605FC /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		432A893E3D13F1763A317BBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5120C76854AD9098BE883277 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
 		58DFFA16BE8DF031F7EABD38 /* GentleReset.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = GentleReset.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A7ADCA4C71880E04C5C8E94 /* GentleResetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GentleResetUITests.swift; sourceTree = "<group>"; };
 		7440A3AEB75FEA09E4C0FB3C /* EverythingModeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeViewModel.swift; sourceTree = "<group>"; };
@@ -55,6 +57,14 @@
 				7440A3AEB75FEA09E4C0FB3C /* EverythingModeViewModel.swift */,
 			);
 			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		1FD17729F012389F8FE469EA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				5120C76854AD9098BE883277 /* ReminderService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		1FF75F0379748A6E8D156096 /* Model */ = {
@@ -97,6 +107,7 @@
 				9165D4F89E1E8427DB94C0A5 /* App */,
 				1FF75F0379748A6E8D156096 /* Model */,
 				04018CA2F8CFD6311B4ACE1F /* Resources */,
+				1FD17729F012389F8FE469EA /* Services */,
 				8DE6F522894C4C1AC06B4808 /* Style */,
 				0B6D4140E2285C698636659E /* ViewModel */,
 			);
@@ -220,6 +231,7 @@
 				C54D17A5CEC1EC3F6FDB7A4B /* EverythingModeViewModel.swift in Sources */,
 				18727926269C5EF5D17B7054 /* GentleResetApp.swift in Sources */,
 				B99F73F18F0D2995168BFD90 /* Haptics.swift in Sources */,
+				9109651F377B927F993D3C26 /* ReminderService.swift in Sources */,
 				83DBAD816F233CDA362B8F13 /* ResetState.swift in Sources */,
 				0DD636CAD4A440503CAC2420 /* RootView.swift in Sources */,
 			);
