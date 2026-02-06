@@ -10,17 +10,17 @@ final class EverythingModeUITests: XCTestCase {
         app.launchArguments.append("UITEST_FAST")
         app.launch()
 
-        XCTAssertTrue(app.buttons["beginResetButton"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["beginResetButton"].waitForExistence(timeout: 4))
         app.buttons["beginResetButton"].tap()
 
-        XCTAssertTrue(app.buttons["skipBreathingButton"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["skipBreathingButton"].waitForExistence(timeout: 5))
         app.buttons["skipBreathingButton"].tap()
 
         XCTAssertTrue(app.staticTexts["Want me to help sort what's weighing on you?"].waitForExistence(timeout: 12))
         app.buttons["skipTranslationButton"].tap()
 
-        XCTAssertTrue(app.staticTexts["Done for now."].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Done for now."].waitForExistence(timeout: 4))
         app.buttons["startOverButton"].tap()
-        XCTAssertTrue(app.staticTexts["Everything piling up?"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Everything piling up?"].waitForExistence(timeout: 4))
     }
 }

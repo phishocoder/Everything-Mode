@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		16D33E0B9A1AA2FCFB417E64 /* AITranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA7DE6DE82AFA550E6A2C89 /* AITranslationService.swift */; };
+		2F4B8BC277D9CCC1B0019E81 /* EverythingModeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EA8B26492883F2E7D959CB2 /* EverythingModeUITests.swift */; };
 		3B9E9AD481941E29D82F13FE /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36C7A6A9B8DD3249A846F4D /* RootView.swift */; };
 		4B5C4D26FD81A44BAF147077 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56205A910628E0579B38BA09 /* Haptics.swift */; };
 		543E6499AA785CEBCE281062 /* EverythingModeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82BE77D8A2B34BD60E9EC91 /* EverythingModeViewModel.swift */; };
@@ -16,7 +17,6 @@
 		82344A9026F6A4D791F39E8E /* ResetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 054912CC49CD28B2479293E4 /* ResetState.swift */; };
 		C4B5F1583814925377493CCD /* CalmTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF1A654D929F362EA5B77E3 /* CalmTheme.swift */; };
 		CEDDB1A60DB2AB330F86304B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B93602D631E49EB70E27A195 /* Assets.xcassets */; };
-		E2908CCC5C3F259F48703DFB /* GentleResetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A2166ADEA0C980251D19EF /* GentleResetUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,11 +33,11 @@
 		054912CC49CD28B2479293E4 /* ResetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetState.swift; sourceTree = "<group>"; };
 		1736F2CFECA2E6315C61125D /* everything mode.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "everything mode.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AE4B8EB43984E16A154D207 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
+		1EA8B26492883F2E7D959CB2 /* EverythingModeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeUITests.swift; sourceTree = "<group>"; };
 		56205A910628E0579B38BA09 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		AFA7DE6DE82AFA550E6A2C89 /* AITranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AITranslationService.swift; sourceTree = "<group>"; };
 		B93602D631E49EB70E27A195 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BAE77D6091303A358D2514B9 /* EverythingModeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeApp.swift; sourceTree = "<group>"; };
-		C7A2166ADEA0C980251D19EF /* GentleResetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GentleResetUITests.swift; sourceTree = "<group>"; };
 		CFF1A654D929F362EA5B77E3 /* CalmTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalmTheme.swift; sourceTree = "<group>"; };
 		D2C26151AEDF2ECC31BED12E /* everything mode UITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "everything mode UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D36C7A6A9B8DD3249A846F4D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -122,7 +122,7 @@
 		EBE5301BF67D83E81CE2735D /* EverythingModeUITests */ = {
 			isa = PBXGroup;
 			children = (
-				C7A2166ADEA0C980251D19EF /* GentleResetUITests.swift */,
+				1EA8B26492883F2E7D959CB2 /* EverythingModeUITests.swift */,
 			);
 			path = EverythingModeUITests;
 			sourceTree = "<group>";
@@ -230,7 +230,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E2908CCC5C3F259F48703DFB /* GentleResetUITests.swift in Sources */,
+				2F4B8BC277D9CCC1B0019E81 /* EverythingModeUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
