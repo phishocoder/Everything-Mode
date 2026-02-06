@@ -1,51 +1,62 @@
 import SwiftUI
 
 enum CalmTheme {
-    static let backgroundTop = Color(red: 0.88, green: 0.93, blue: 0.97)
-    static let backgroundBottom = Color(red: 0.98, green: 0.97, blue: 0.95)
-    static let primaryText = Color(red: 0.13, green: 0.16, blue: 0.20)
-    static let secondaryText = Color(red: 0.35, green: 0.39, blue: 0.43)
-    static let primaryAction = Color(red: 0.28, green: 0.41, blue: 0.49)
-    static let inputBackground = Color.white.opacity(0.58)
-    static let cardStroke = Color.white.opacity(0.62)
-    static let shadow = Color.black.opacity(0.10)
+    static let primaryText = Color(red: 0.09, green: 0.11, blue: 0.16)
+    static let secondaryText = Color(red: 0.19, green: 0.23, blue: 0.31)
+    static let whiteSoft = Color.white.opacity(0.72)
+    static let whiteStroke = Color.white.opacity(0.58)
 
-    static var backgroundGradient: LinearGradient {
-        LinearGradient(
-            colors: [backgroundTop, backgroundBottom],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+    static func gradient(for mood: EmotionalState?) -> LinearGradient {
+        let colors: [Color]
+
+        switch mood {
+        case .racing:
+            colors = [Color(red: 0.54, green: 0.75, blue: 1.00), Color(red: 0.35, green: 0.53, blue: 0.92)]
+        case .heavy:
+            colors = [Color(red: 0.86, green: 0.66, blue: 0.54), Color(red: 0.60, green: 0.46, blue: 0.63)]
+        case .numb:
+            colors = [Color(red: 0.71, green: 0.82, blue: 0.82), Color(red: 0.52, green: 0.64, blue: 0.72)]
+        case .scattered:
+            colors = [Color(red: 0.69, green: 0.89, blue: 0.73), Color(red: 0.42, green: 0.69, blue: 0.82)]
+        case .none:
+            colors = [Color(red: 0.84, green: 0.89, blue: 0.99), Color(red: 0.78, green: 0.77, blue: 0.97)]
+        }
+
+        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
 }
 
 struct ScreenContainer<Content: View>: View {
+    let mood: EmotionalState?
     private let content: Content
 
-    init(@ViewBuilder content: () -> Content) {
+    init(mood: EmotionalState?, @ViewBuilder content: () -> Content) {
+        self.mood = mood
         self.content = content()
     }
 
     var body: some View {
         ZStack {
-            CalmTheme.backgroundGradient.ignoresSafeArea()
+            CalmTheme.gradient(for: mood)
+                .ignoresSafeArea()
 
             Circle()
-                .fill(Color.white.opacity(0.18))
-                .blur(radius: 36)
-                .frame(width: 340, height: 340)
-                .offset(x: -130, y: -300)
-
-            Circle()
-                .fill(Color.white.opacity(0.12))
-                .blur(radius: 44)
+                .fill(Color.white.opacity(0.2))
+                .blur(radius: 48)
                 .frame(width: 300, height: 300)
-                .offset(x: 140, y: 280)
+                .offset(x: -120, y: -260)
+
+            Circle()
+                .fill(Color.white.opacity(0.16))
+                .blur(radius: 54)
+                .frame(width: 260, height: 260)
+                .offset(x: 130, y: 280)
 
             VStack {
                 content
                     .padding(.horizontal, 20)
-                    .padding(.vertical, 18)
+                    .padding(.top, 20)
+                    .padding(.bottom, 14)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
@@ -61,26 +72,11 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(CalmTheme.primaryAction.opacity(configuration.isPressed ? 0.83 : 1))
+                    .fill(Color.black.opacity(configuration.isPressed ? 0.32 : 0.24))
             )
-            .shadow(color: CalmTheme.shadow, radius: configuration.isPressed ? 2 : 8, y: configuration.isPressed ? 1 : 5)
-    }
-}
-
-struct SecondaryOutlineButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 16, weight: .medium, design: .rounded))
-            .foregroundStyle(CalmTheme.primaryText.opacity(configuration.isPressed ? 0.75 : 1))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(
+            .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.45))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(CalmTheme.cardStroke, lineWidth: 1)
-                    )
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
             )
     }
 }

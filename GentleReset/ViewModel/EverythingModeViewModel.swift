@@ -1,23 +1,25 @@
 import Foundation
+import SwiftUI
 
 @MainActor
 final class EverythingModeViewModel: ObservableObject {
-    @Published var step: ResetStep = .arrive
-    @Published var brainDump: String = "" {
+    @Published var step: ResetStep = .mood
+    @Published var selectedMood: EmotionalState? {
         didSet { persistDraft() }
     }
-    @Published var selectedCategories: Set<WeightCategory> = [] {
+    @Published var releaseLine: String = "" {
         didSet { persistDraft() }
     }
-    @Published var chosenAction: String = "" {
-        didSet { persistDraft() }
-    }
-    @Published var closingChoice: ClosingChoice? {
+    @Published var reliefChoice: ReliefChoice? {
         didSet { persistDraft() }
     }
 
+    @Published var breathPhase: BreathPhase = .inhale
+    @Published var breathScale: CGFloat = 0.88
+    @Published var completedBreathCycles = 0
     @Published private(set) var lastSummary: LastResetSummary?
 
+    private var breathingTask: Task<Void, Never>?
     private let storage: ResetStorage
 
     init(storage: ResetStorage = ResetStorage()) {
@@ -25,142 +27,107 @@ final class EverythingModeViewModel: ObservableObject {
         restoreState()
     }
 
-    var stepCount: Int { ResetStep.allCases.count }
-
-    var canMoveForward: Bool {
-        switch step {
-        case .arrive, .dump, .complete:
-            return true
-        case .categorize:
-            return !selectedCategories.isEmpty
-        case .chooseAction:
-            return !chosenAction.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        case .chooseClosing:
-            return closingChoice != nil
-        }
+    var canStartReset: Bool {
+        selectedMood != nil
     }
 
-    var primaryButtonTitle: String {
-        switch step {
-        case .arrive:
-            return "Start reset"
-        case .dump:
-            return "Continue"
-        case .categorize:
-            return "Continue"
-        case .chooseAction:
-            return "Continue"
-        case .chooseClosing:
-            return "Finish reset"
-        case .complete:
-            return "Reset again"
-        }
+    var canFinishReset: Bool {
+        reliefChoice != nil
     }
 
-    var progressText: String {
-        "Step \(step.rawValue + 1) of \(stepCount)"
+    var canContinueFromBreathing: Bool {
+        completedBreathCycles >= 1
     }
 
-    var selectedCategoriesText: String {
-        if selectedCategories.isEmpty {
-            return "Uncategorized"
+    var shortSummaryText: String {
+        guard let lastSummary else {
+            return "No streaks. No score."
         }
 
-        return selectedCategories
-            .map(\ .title)
-            .sorted()
-            .joined(separator: " • ")
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .short
+        return "Last reset \(formatter.localizedString(for: lastSummary.timestamp, relativeTo: Date()))"
     }
 
-    func toggleCategory(_ category: WeightCategory) {
-        if selectedCategories.contains(category) {
-            selectedCategories.remove(category)
-            return
-        }
-
-        // Keep this constrained to reduce decision fatigue.
-        if selectedCategories.count < 3 {
-            selectedCategories.insert(category)
-        }
+    func startReset() {
+        guard canStartReset else { return }
+        LightHaptics.tap()
+        step = .breathe
+        startBreathingLoop()
     }
 
-    func next() {
-        switch step {
-        case .arrive:
-            step = .dump
-        case .dump:
-            step = .categorize
-        case .categorize:
-            step = .chooseAction
-        case .chooseAction:
-            step = .chooseClosing
-        case .chooseClosing:
-            finalizeReset()
-            step = .complete
-        case .complete:
-            startOver(clearSummary: false)
-        }
+    func continueFromBreathing() {
+        stopBreathingLoop()
+        LightHaptics.tap()
+        step = .release
     }
 
-    func back() {
-        switch step {
-        case .arrive:
-            break
-        case .dump:
-            step = .arrive
-        case .categorize:
-            step = .dump
-        case .chooseAction:
-            step = .categorize
-        case .chooseClosing:
-            step = .chooseAction
-        case .complete:
-            step = .chooseClosing
-        }
-    }
+    func finishReset() {
+        guard let mood = selectedMood, let reliefChoice else { return }
 
-    private func finalizeReset() {
-        guard let closingChoice else { return }
-
-        let summary = LastResetSummary(
-            timestamp: Date(),
-            action: chosenAction.trimmingCharacters(in: .whitespacesAndNewlines),
-            closingChoice: closingChoice
-        )
-
-        lastSummary = summary
+        let summary = LastResetSummary(timestamp: Date(), mood: mood, reliefChoice: reliefChoice)
         storage.saveSummary(summary)
+        lastSummary = summary
         storage.clearDraft()
+        LightHaptics.complete()
+        step = .complete
     }
 
-    private func startOver(clearSummary: Bool) {
-        step = .arrive
-        brainDump = ""
-        selectedCategories = []
-        chosenAction = ""
-        closingChoice = nil
+    func resetAgain() {
+        step = .mood
+        releaseLine = ""
+        reliefChoice = nil
+        completedBreathCycles = 0
+        breathScale = 0.88
+        breathPhase = .inhale
         storage.clearDraft()
-        if clearSummary {
-            lastSummary = nil
+        LightHaptics.tap()
+    }
+
+    private func startBreathingLoop() {
+        stopBreathingLoop()
+        completedBreathCycles = 0
+        runBreathPhase(.inhale)
+    }
+
+    private func runBreathPhase(_ phase: BreathPhase) {
+        guard step == .breathe else { return }
+
+        breathPhase = phase
+        LightHaptics.breath(phase)
+
+        withAnimation(.easeInOut(duration: phase.duration)) {
+            breathScale = (phase == .inhale) ? 1.16 : 0.88
         }
+
+        breathingTask = Task { [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: UInt64(phase.duration * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+
+            if phase == .exhale {
+                completedBreathCycles += 1
+            }
+
+            runBreathPhase(phase.next)
+        }
+    }
+
+    private func stopBreathingLoop() {
+        breathingTask?.cancel()
+        breathingTask = nil
     }
 
     private func persistDraft() {
-        let draft = ResetDraft(
-            brainDump: brainDump,
-            selectedCategories: Array(selectedCategories),
-            chosenAction: chosenAction,
-            closingChoice: closingChoice
-        )
+        let draft = ResetDraft(mood: selectedMood, releaseLine: releaseLine, reliefChoice: reliefChoice)
         storage.saveDraft(draft)
     }
 
     private func restoreState() {
         if let draft = storage.loadDraft() {
-            brainDump = draft.brainDump
-            selectedCategories = Set(draft.selectedCategories)
-            chosenAction = draft.chosenAction
-            closingChoice = draft.closingChoice
+            selectedMood = draft.mood
+            releaseLine = draft.releaseLine
+            reliefChoice = draft.reliefChoice
         }
 
         lastSummary = storage.loadSummary()

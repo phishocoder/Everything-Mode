@@ -1,118 +1,101 @@
 import Foundation
 
-enum ResetStep: Int, CaseIterable {
-    case arrive
-    case dump
-    case categorize
-    case chooseAction
-    case chooseClosing
+enum ResetStep: Int {
+    case mood
+    case breathe
+    case release
     case complete
-
-    var title: String {
-        switch self {
-        case .arrive:
-            return "Arrive"
-        case .dump:
-            return "Unload"
-        case .categorize:
-            return "Sort gently"
-        case .chooseAction:
-            return "Pick one"
-        case .chooseClosing:
-            return "Close this"
-        case .complete:
-            return "Done"
-        }
-    }
 }
 
-enum WeightCategory: String, CaseIterable, Identifiable, Codable, Hashable {
-    case practical
-    case emotional
-    case people
-    case body
-    case admin
+enum EmotionalState: String, CaseIterable, Identifiable, Codable {
+    case racing
+    case heavy
+    case numb
+    case scattered
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .practical:
-            return "Practical"
-        case .emotional:
-            return "Emotional"
-        case .people:
-            return "People"
-        case .body:
-            return "Body"
-        case .admin:
-            return "Admin"
-        }
-    }
-
-    var hint: String {
-        switch self {
-        case .practical:
-            return "chores, errands, loose ends"
-        case .emotional:
-            return "fear, shame, grief, pressure"
-        case .people:
-            return "family, friends, work dynamics"
-        case .body:
-            return "sleep, hunger, tension, health"
-        case .admin:
-            return "forms, inbox, bills, systems"
+        case .racing:
+            return "Racing"
+        case .heavy:
+            return "Heavy"
+        case .numb:
+            return "Numb"
+        case .scattered:
+            return "Scattered"
         }
     }
 }
 
-enum ClosingChoice: String, CaseIterable, Identifiable, Codable {
-    case briefAction
-    case parkIt
-    case releaseIt
+enum ReliefChoice: String, CaseIterable, Identifiable, Codable {
+    case twoMinutes
+    case park
+    case release
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .briefAction:
-            return "Do 2 minutes now"
-        case .parkIt:
-            return "Park it for later"
-        case .releaseIt:
-            return "Let it be for now"
+        case .twoMinutes:
+            return "2 min now"
+        case .park:
+            return "Park for later"
+        case .release:
+            return "Not today"
+        }
+    }
+}
+
+enum BreathPhase {
+    case inhale
+    case exhale
+
+    var next: BreathPhase {
+        switch self {
+        case .inhale:
+            return .exhale
+        case .exhale:
+            return .inhale
         }
     }
 
-    var detail: String {
+    var duration: TimeInterval {
         switch self {
-        case .briefAction:
-            return "A tiny start counts. Stop after two minutes."
-        case .parkIt:
-            return "Put it on your calendar and get your mind back."
-        case .releaseIt:
-            return "Not everything needs your energy today."
+        case .inhale:
+            return 4
+        case .exhale:
+            return 5
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .inhale:
+            return "Breathe in"
+        case .exhale:
+            return "Breathe out"
         }
     }
 }
 
 struct ResetDraft: Codable {
-    var brainDump: String
-    var selectedCategories: [WeightCategory]
-    var chosenAction: String
-    var closingChoice: ClosingChoice?
+    var mood: EmotionalState?
+    var releaseLine: String
+    var reliefChoice: ReliefChoice?
 }
 
 struct LastResetSummary: Codable {
     var timestamp: Date
-    var action: String
-    var closingChoice: ClosingChoice
+    var mood: EmotionalState
+    var reliefChoice: ReliefChoice
 }
 
 struct ResetStorage {
     private enum Keys {
-        static let draft = "everything_mode.reset_draft"
-        static let summary = "everything_mode.last_summary"
+        static let draft = "everything_mode.v2_draft"
+        static let summary = "everything_mode.v2_summary"
     }
 
     private let defaults: UserDefaults
