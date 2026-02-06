@@ -1,6 +1,7 @@
 import Foundation
 
 enum ResetStep: Int {
+    case welcome
     case mood
     case breathe
     case release
@@ -25,6 +26,19 @@ enum EmotionalState: String, CaseIterable, Identifiable, Codable {
             return "Numb"
         case .scattered:
             return "Scattered"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .racing:
+            return "Thoughts are sprinting and won't slow down."
+        case .heavy:
+            return "Everything feels weighty, even small things."
+        case .numb:
+            return "You feel checked out or shut down."
+        case .scattered:
+            return "Too many tabs open in your head."
         }
     }
 }

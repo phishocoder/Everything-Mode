@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 final class EverythingModeViewModel: ObservableObject {
-    @Published var step: ResetStep = .mood
+    @Published var step: ResetStep = .welcome
     @Published var selectedMood: EmotionalState? {
         didSet { persistDraft() }
     }
@@ -27,10 +27,6 @@ final class EverythingModeViewModel: ObservableObject {
         restoreState()
     }
 
-    var canStartReset: Bool {
-        selectedMood != nil
-    }
-
     var canFinishReset: Bool {
         reliefChoice != nil
     }
@@ -49,8 +45,14 @@ final class EverythingModeViewModel: ObservableObject {
         return "Last reset \(formatter.localizedString(for: lastSummary.timestamp, relativeTo: Date()))"
     }
 
-    func startReset() {
-        guard canStartReset else { return }
+    func beginFromWelcome() {
+        LightHaptics.tap()
+        step = .mood
+    }
+
+    func selectMoodAndStart(_ mood: EmotionalState) {
+        selectedMood = mood
+        // Selection should immediately reduce decision load and begin regulation.
         LightHaptics.tap()
         step = .breathe
         startBreathingLoop()
@@ -74,7 +76,7 @@ final class EverythingModeViewModel: ObservableObject {
     }
 
     func resetAgain() {
-        step = .mood
+        step = .welcome
         releaseLine = ""
         reliefChoice = nil
         completedBreathCycles = 0
@@ -128,6 +130,12 @@ final class EverythingModeViewModel: ObservableObject {
             selectedMood = draft.mood
             releaseLine = draft.releaseLine
             reliefChoice = draft.reliefChoice
+
+            if draft.reliefChoice != nil {
+                step = .release
+            } else if draft.mood != nil {
+                step = .mood
+            }
         }
 
         lastSummary = storage.loadSummary()

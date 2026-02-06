@@ -9,11 +9,11 @@ final class GentleResetUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
+        XCTAssertTrue(app.buttons["beginResetButton"].waitForExistence(timeout: 2))
+        app.buttons["beginResetButton"].tap()
+
         XCTAssertTrue(app.buttons["state_racing"].waitForExistence(timeout: 2))
         app.buttons["state_racing"].tap()
-
-        XCTAssertTrue(app.buttons["startBreathButton"].isEnabled)
-        app.buttons["startBreathButton"].tap()
 
         let continueButton = app.buttons["continueFromBreathButton"]
         XCTAssertTrue(continueButton.waitForExistence(timeout: 12))
@@ -28,6 +28,6 @@ final class GentleResetUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Done for now."].waitForExistence(timeout: 2))
 
         app.buttons["resetAgainButton"].tap()
-        XCTAssertTrue(app.staticTexts["What is loudest?"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Everything feels like too much."].waitForExistence(timeout: 2))
     }
 }

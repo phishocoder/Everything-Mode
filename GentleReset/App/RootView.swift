@@ -10,6 +10,8 @@ struct RootView: View {
 
                 Group {
                     switch viewModel.step {
+                    case .welcome:
+                        WelcomeStep()
                     case .mood:
                         MoodStep()
                     case .breathe:
@@ -41,31 +43,67 @@ struct RootView: View {
     }
 }
 
+private struct WelcomeStep: View {
+    @EnvironmentObject private var viewModel: EverythingModeViewModel
+
+    var body: some View {
+        VStack(spacing: 18) {
+            Text("Everything feels like too much.")
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(CalmTheme.primaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("This is a short reset. About 60 seconds.")
+                .font(.system(size: 17, weight: .medium, design: .rounded))
+                .foregroundStyle(CalmTheme.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button("Begin") {
+                viewModel.beginFromWelcome()
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .accessibilityIdentifier("beginResetButton")
+        }
+        .padding(18)
+        .glassCard()
+    }
+}
+
 private struct MoodStep: View {
     @EnvironmentObject private var viewModel: EverythingModeViewModel
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("What is loudest?")
+            Text("What kind of overwhelm is this?")
                 .font(.system(size: 28, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("Close enough is perfect. Pick one and we start.")
+                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .foregroundStyle(CalmTheme.secondaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 10) {
                 ForEach(EmotionalState.allCases) { mood in
                     Button {
-                        viewModel.selectedMood = mood
-                        LightHaptics.tap()
+                        // No second confirmation button: tap -> regulation starts immediately.
+                        viewModel.selectMoodAndStart(mood)
                     } label: {
-                        HStack {
-                            Text(mood.title)
-                                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                .foregroundStyle(CalmTheme.primaryText)
-                            Spacer()
-                            if viewModel.selectedMood == mood {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(CalmTheme.secondaryText)
+                        VStack(alignment: .leading, spacing: 3) {
+                            HStack {
+                                Text(mood.title)
+                                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(CalmTheme.primaryText)
+                                Spacer()
+                                if viewModel.selectedMood == mood {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(CalmTheme.secondaryText)
+                                }
                             }
+                            Text(mood.subtitle)
+                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .foregroundStyle(CalmTheme.secondaryText)
                         }
                         .padding(14)
                         .background(CalmTheme.whiteSoft)
@@ -79,14 +117,6 @@ private struct MoodStep: View {
                     .accessibilityIdentifier("state_\(mood.rawValue)")
                 }
             }
-
-            Button("Start 60-second reset") {
-                viewModel.startReset()
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .accessibilityIdentifier("startBreathButton")
-            .disabled(!viewModel.canStartReset)
-            .opacity(viewModel.canStartReset ? 1 : 0.45)
         }
         .padding(18)
         .glassCard()
@@ -115,7 +145,7 @@ private struct BreatheStep: View {
             }
             .padding(.vertical, 8)
 
-            Text("Follow the pulse")
+            Text("Stay with the circle")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(CalmTheme.secondaryText)
 
@@ -135,21 +165,19 @@ private struct BreatheStep: View {
 private struct ReleaseStep: View {
     @EnvironmentObject private var viewModel: EverythingModeViewModel
 
-    private let lineLimit = 120
-
     var body: some View {
         VStack(spacing: 14) {
-            Text("Drop one line (optional)")
+            Text("Put it down for a moment (optional)")
                 .font(.system(size: 24, weight: .semibold, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            TextField("what you are releasing", text: releaseBinding)
+            TextEditor(text: $viewModel.releaseLine)
                 .textInputAutocapitalization(.sentences)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .foregroundStyle(CalmTheme.primaryText)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+                .frame(minHeight: 110)
+                .padding(10)
                 .background(CalmTheme.whiteSoft)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
@@ -193,13 +221,6 @@ private struct ReleaseStep: View {
         }
         .padding(18)
         .glassCard()
-    }
-
-    private var releaseBinding: Binding<String> {
-        Binding(
-            get: { viewModel.releaseLine },
-            set: { viewModel.releaseLine = String($0.prefix(lineLimit)) }
-        )
     }
 }
 
