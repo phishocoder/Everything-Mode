@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -31,7 +31,7 @@
 
 /* Begin PBXFileReference section */
 		054912CC49CD28B2479293E4 /* ResetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetState.swift; sourceTree = "<group>"; };
-		1736F2CFECA2E6315C61125D /* everything mode.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "everything mode.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1736F2CFECA2E6315C61125D /* everything mode.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "everything mode.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AE4B8EB43984E16A154D207 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
 		1EA8B26492883F2E7D959CB2 /* EverythingModeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeUITests.swift; sourceTree = "<group>"; };
 		56205A910628E0579B38BA09 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
@@ -39,7 +39,7 @@
 		B93602D631E49EB70E27A195 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BAE77D6091303A358D2514B9 /* EverythingModeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeApp.swift; sourceTree = "<group>"; };
 		CFF1A654D929F362EA5B77E3 /* CalmTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalmTheme.swift; sourceTree = "<group>"; };
-		D2C26151AEDF2ECC31BED12E /* everything mode UITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "everything mode UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2C26151AEDF2ECC31BED12E /* everything mode UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "everything mode UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D36C7A6A9B8DD3249A846F4D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		E82BE77D8A2B34BD60E9EC91 /* EverythingModeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EverythingModeViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -181,7 +181,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					581ECB2DF0DCBCFF940AF567 = {
 						DevelopmentTeam = 7ER7B4U7Y5;
@@ -204,7 +204,6 @@
 			);
 			mainGroup = CFF6B0BE4749FB195FDB3A63;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -316,6 +315,7 @@
 				DEVELOPMENT_TEAM = 7ER7B4U7Y5;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -337,6 +337,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "everything mode";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -384,6 +385,7 @@
 				DEVELOPMENT_TEAM = 7ER7B4U7Y5;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -398,6 +400,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "everything mode";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";

@@ -25,16 +25,24 @@ struct AITranslationService {
     private let session: URLSession
     private let endpoint = URL(string: "https://api.openai.com/v1/responses")!
     private let model = "gpt-4.1-mini"
+    private let persistedKeyDefaultsKey = "everything_mode.runtime_openai_api_key"
     private let apiKey: String?
 
     init(session: URLSession = .shared, apiKey: String? = ProcessInfo.processInfo.environment["OPENAI_API_KEY"]) {
         self.session = session
         self.apiKey = apiKey
+
+        // Developer convenience: if launched from Xcode with env var once,
+        // persist locally so subsequent icon/notification launches still work.
+        if let apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            UserDefaults.standard.set(apiKey, forKey: persistedKeyDefaultsKey)
+        }
     }
 
     func buildSnapshot(from rawInput: String) async throws -> AdminSnapshot {
         let trimmed = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        let resolvedKey = resolvedAPIKey()
+        guard !resolvedKey.isEmpty else {
             throw AITranslationError.backendNotConfigured
         }
 
@@ -66,7 +74,7 @@ struct AITranslationService {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(resolvedKey)", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONEncoder().encode(body)
 
         let (data, response) = try await session.data(for: request)
@@ -106,6 +114,15 @@ struct AITranslationService {
         let jsonString = String(text[start...end])
         guard let data = jsonString.data(using: .utf8) else { return nil }
         return try JSONDecoder().decode(AdminSnapshotPayload.self, from: data)
+    }
+
+    private func resolvedAPIKey() -> String {
+        if let apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        let persisted = UserDefaults.standard.string(forKey: persistedKeyDefaultsKey) ?? ""
+        return persisted.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private var systemPrompt: String {
